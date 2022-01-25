@@ -1,0 +1,9 @@
+.idea
+*~
+t/out/*
+.env
+__pycache__
+data/*
+#*
+.#*
+tmp*

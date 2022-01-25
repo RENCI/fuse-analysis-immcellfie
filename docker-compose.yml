@@ -1,0 +1,44 @@
+version: "3"
+
+services:
+  fa-immunespace-redis:
+    container_name: fa-immunespace-redis
+    image: redis:alpine
+    restart: always
+    environment: {}
+    volumes:
+      - /data
+    expose:
+      - 6379
+    command: ["--appendonly", "yes"]
+
+  fa-immunespace-pg-db:
+    container_name: fa-immunespace-pg-db
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    volumes:
+      - /var/lib/postgresql/data/
+    expose:
+      - 5432
+    ports:
+      - "5432:5432"
+
+  fa-immunespace-api:
+    container_name: fa-immunespace-api
+    build: .
+    restart: always
+    environment:
+      DATABASE_URL: "postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@fa-immunespace-pg-db:5432/${POSTGRES_DB}"
+      HOST_ABSOLUTE_PATH: "${HOST_ABSOLUTE_PATH}"
+    ports:
+        - 8000:8000
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - ./data:/app/data
+    depends_on:
+        - fa-immunespace-redis
+        - fa-immunespace-pg-db
